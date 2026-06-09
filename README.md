@@ -8,11 +8,6 @@ The official code and dataset of our paper:
 # Dataset Overview
 We construct the High-Resolution Remote Sensing Ship Complexity Benchmark (HRSSC-Bench) specifically for image complexity assessment in remote sensing ship detection. Different from general image complexity datasets, HRSSC-Bench adopts a four-dimensional evaluation system including Edge Clarity (EC), Texture Similarity (TS), Target Density (TD) and Scale Variation (SV) that conform to the characteristics of remote sensing scenes. All samples are divided into five hierarchical complexity levels via manual annotation. The figure below displays typical samples with different complexity grades and corresponding four-dimensional metric distributions.
 
-<p align="center">
-  <img width="80%" src="./four-metrics.png">
-</p>
-
-<br/>
 
 
 <p align="center">
@@ -31,9 +26,7 @@ To remedy the insufficient spatial feature interaction and poor remote sensing a
 </p>
  <br/>
 
- <p align="center">
-  <img width="80%" src="./visualizaton.png">
-</p>
+
 
 <br/>
 
