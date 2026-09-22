@@ -16,7 +16,7 @@ class ic_dataset(Dataset):
     def parse_lines(self,lines):
         image_info_list = []
         for line in lines:
-            line_split = line.strip().split("  ")
+            line_split = line.strip().split()
             img_name = line_split[0]
             img_label = line_split[1]
             image_info_list.append((img_name,img_label))      
