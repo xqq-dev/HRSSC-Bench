@@ -4,8 +4,6 @@ import torchvision
 import torch.nn as nn
 import torch.nn.functional as F
 
-
-
 class conv_bn_relu(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size=3, padding=1, stride=1):
         super().__init__()
