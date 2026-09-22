@@ -116,7 +116,7 @@ if __name__ == "__main__":
     if not os.path.exists(args.ck_save_dir):
         os.makedirs(args.ck_save_dir, exist_ok=True)
 
-    model = ICNet()
+    model = BICNet()
     device = torch.device("cuda:{}".format(args.gpu_id) if torch.cuda.is_available() else "cpu")
     model.to(device)
 
@@ -138,7 +138,11 @@ if __name__ == "__main__":
     if args.warm > 0:
         warmup_scheduler = WarmUpLR(optimizer, iter_per_epoch * args.warm)
 
-milestones=args.milestone, gamma=args.lr_decay_rate)
+Scheduler = optim.lr_scheduler.MultiStepLR(
+    Opmimizer,
+    milestones=args.milestone,
+    gamma=args.lr_decay_rate
+)
 
     main_scheduler = optim.lr_scheduler.CosineAnnealingWarmRestarts(
         optimizer,
@@ -158,7 +162,7 @@ milestones=args.milestone, gamma=args.lr_decay_rate)
         eval_info = evaluation()
 
         try:
-            plcc_str = eval_info.split("PLCC:")[1].split(",")[0].strip()
+            plcc_str = eval_info.split("Pearsonr :")[1].split(",")[0].strip()
             plcc = float(plcc_str)
 
             if plcc > best_plcc:
