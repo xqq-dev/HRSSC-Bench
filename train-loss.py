@@ -9,6 +9,7 @@ from torch import optim
 from dataset import ic_dataset
 from BICNet import BICNet
 
+
 class CombinedLoss(nn.Module):
     def __init__(self, alpha=0.7):
         super(CombinedLoss, self).__init__()
@@ -27,24 +28,23 @@ def train(epoch):
     for batch_index, (image, label, _) in enumerate(trainDataLoader):
         image = image.to(device)
         label = label.to(device)
-        optimizer.zero_grad() 
+        optimizer.zero_grad()
         score1, cly_map = model(image)
         score2 = cly_map.mean(axis=(1, 2, 3))
         loss1 = loss_function(score1, label)
         loss2 = loss_function(score2, label)
         loss = 0.9 * loss1 + 0.1 * loss2
         loss.backward()
-        optimizer.step() 
-     
-        if epoch <= args.warm:
+        optimizer.step()
+
+        if warmup_scheduler is not None and epoch <= args.warm:
             warmup_scheduler.step()
 
-  
         if (batch_index + 1) % max(1, len(trainDataLoader) // 3) == 0:
             print(
                 'Training Epoch: {epoch} [{trained_samples}/{total_samples}]\tLoss: {loss:0.4f}\tLR: {lr:0.6f}'.format(
                     loss=loss.item(),
-                    lr=optimizer.param_groups[0]['lr'], 
+                    lr=optimizer.param_groups[0]['lr'],
                     epoch=epoch,
                     trained_samples=batch_index * args.batch_size + len(image),
                     total_samples=len(trainDataLoader.dataset)
@@ -95,7 +95,7 @@ if __name__ == "__main__":
         batch_size=args.batch_size,
         num_workers=args.num_workers,
         shuffle=True,
-        pin_memory=True  
+        pin_memory=True
     )
 
     testDataset = ic_dataset(
@@ -112,7 +112,6 @@ if __name__ == "__main__":
         pin_memory=True
     )
 
-  
     if not os.path.exists(args.ck_save_dir):
         os.makedirs(args.ck_save_dir, exist_ok=True)
 
@@ -120,35 +119,26 @@ if __name__ == "__main__":
     device = torch.device("cuda:{}".format(args.gpu_id) if torch.cuda.is_available() else "cpu")
     model.to(device)
 
-
     loss_function = CombinedLoss(alpha=0.7)
-
-
-    # optimizer = optim.SGD(params, lr=args.lr, momentum=0.9, weight_decay=args.weight_decay)
 
     optimizer = optim.AdamW(
         model.parameters(),
-        lr=1e-4,  
-        weight_decay=1e-5,  
+        lr=1e-4,
+        weight_decay=1e-5,
         betas=(0.9, 0.999)
     )
 
     iter_per_epoch = len(trainDataLoader)
 
+    warmup_scheduler = None
     if args.warm > 0:
         warmup_scheduler = WarmUpLR(optimizer, iter_per_epoch * args.warm)
 
-Scheduler = optim.lr_scheduler.MultiStepLR(
-    Opmimizer,
-    milestones=args.milestone,
-    gamma=args.lr_decay_rate
-)
-
     main_scheduler = optim.lr_scheduler.CosineAnnealingWarmRestarts(
         optimizer,
-        T_0=10, 
-        T_mult=2,  
-        eta_min=1e-6  
+        T_0=10,
+        T_mult=2,
+        eta_min=1e-6
     )
 
     best_plcc = -1.0
@@ -168,8 +158,8 @@ Scheduler = optim.lr_scheduler.MultiStepLR(
             if plcc > best_plcc:
                 best_plcc = plcc
                 torch.save(model.state_dict(), os.path.join(args.ck_save_dir, 'best.pth'))
-                print(f"✅ 新的最佳模型已保存，PLCC: {plcc:.4f}")
+                print(f"新的最佳模型已保存，PLCC: {plcc:.4f}")
         except:
-            pass  
+            pass
 
-    print(f"✅ 训练完成！最佳PLCC: {best_plcc:.4f}")
+    print(f"训练完成！最佳PLCC: {best_plcc:.4f}")
